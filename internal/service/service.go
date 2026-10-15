@@ -34,7 +34,7 @@ type Loadres struct {
 var ErrInvalidRange = errors.New("invalid movie range")
 var ErrNotValueArgs = errors.New("uncorrect args: from > to")
 
-func (m *MovieService) loadMovies(ctx context.Context, from int, to int) (Loadres, error) {
+func (m *MovieService) LoadMovies(ctx context.Context, from int, to int) (Loadres, error) {
 	if from == -1 || to == -1 {
 		return Loadres{}, ErrInvalidRange
 	}
@@ -47,7 +47,6 @@ func (m *MovieService) loadMovies(ctx context.Context, from int, to int) (Loadre
 	defer cencel()
 
 	ch := make(chan int)
-	defer close(ch)
 
 	movies := make([]client.Movieload, 0)
 	movieErrors := make([]MovieError, 0)
@@ -78,6 +77,8 @@ func (m *MovieService) loadMovies(ctx context.Context, from int, to int) (Loadre
 		ch <- i
 	}
 
+	close(ch)
+
 	wg.Wait()
 
 	res := Loadres{
@@ -87,7 +88,7 @@ func (m *MovieService) loadMovies(ctx context.Context, from int, to int) (Loadre
 	return res, nil
 }
 
-func (m *MovieService) loadLastMovie(ctx context.Context) (client.Movieload, error) {
+func (m *MovieService) LoadLastMovie(ctx context.Context) (client.Movieload, error) {
 	var movie client.Movieload
 
 	ctxT, cencel := context.WithTimeout(ctx, 5*time.Second)

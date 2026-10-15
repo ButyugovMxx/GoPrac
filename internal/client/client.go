@@ -17,7 +17,7 @@ type MovieClient struct {
 	Client http.Client
 }
 
-var ErrBadReq = errors.New("404")
+var ErrBadReq = errors.New("film not found")
 
 func (c *MovieClient) GetMovie(ctx context.Context, id int) (Movieload, error) {
 	return Movieload{}, errors.New("GetMovie not implemented")
