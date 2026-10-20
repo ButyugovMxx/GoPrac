@@ -76,6 +76,12 @@ const docTemplate = `{
                 "responses": {
                     "200": {
                         "description": "OK",
+                        "headers": {
+                            "X-Partial-Errors": {
+                                "description": "JSON array of per-movie errors, present when some movies could not be loaded",
+                                "type": "string"
+                            }
+                        },
                         "schema": {
                             "type": "array",
                             "items": {

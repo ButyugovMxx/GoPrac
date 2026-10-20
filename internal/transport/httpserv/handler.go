@@ -16,6 +16,11 @@ type Handler struct {
 	service *service.MovieService
 }
 
+type partialMovieError struct {
+	ID    int    `json:"id"`
+	Error string `json:"error"`
+}
+
 func NewHandler(s *service.MovieService) *Handler {
 	return &Handler{
 		service: s,
@@ -35,6 +40,7 @@ type ToFrom struct {
 // @Param from query int true "First movie ID"
 // @Param to query int true "Last movie ID"
 // @Success 200 {array} client.Movieload
+// @Header 200 {string} X-Partial-Errors "JSON array of per-movie errors, present when some movies could not be loaded"
 // @Failure 400 {string} string "Invalid range"
 // @Failure 502 {string} string "Upstream error"
 // @Router /load-movies [get]
@@ -60,21 +66,35 @@ func (h *Handler) LoadFilms(w http.ResponseWriter, r *http.Request) {
 		case errors.Is(err, service.ErrInvalidRange):
 			http.Error(w, "Service: invalid movie range", http.StatusBadRequest)
 			return
-		case errors.Is(err, service.ErrInvalidRange):
-			http.Error(w, "Servise: args is not currect", http.StatusBadRequest)
-			return
 		case errors.Is(err, context.DeadlineExceeded):
 			http.Error(w, "Request timeout", http.StatusGatewayTimeout)
 
 		default:
-			http.Error(w, "Internal srver error", http.StatusInternalServerError)
+			http.Error(w, "Movie stand is unavailable", http.StatusBadGateway)
 		}
 
 		return
 	}
 
+	if len(movies.Errors) > 0 {
+		partialErrors := make([]partialMovieError, 0, len(movies.Errors))
+		for _, movieErr := range movies.Errors {
+			partialErrors = append(partialErrors, partialMovieError{
+				ID:    movieErr.Id,
+				Error: movieErr.Err.Error(),
+			})
+		}
+
+		errorJSON, err := json.Marshal(partialErrors)
+		if err != nil {
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("X-Partial-Errors", string(errorJSON))
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	erro := json.NewEncoder(w).Encode(movies)
+	erro := json.NewEncoder(w).Encode(movies.Movies)
 	if erro != nil {
 		log.Printf("failed to encode movies: %v", err)
 	}
@@ -101,7 +121,7 @@ func (h *Handler) LoadLastFilm(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Request timeout", http.StatusGatewayTimeout)
 
 		default:
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			http.Error(w, "Movie stand is unavailable", http.StatusBadGateway)
 		}
 		return
 	}

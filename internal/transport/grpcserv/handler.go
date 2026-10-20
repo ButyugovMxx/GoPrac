@@ -50,13 +50,13 @@ func (h *GHandler) LoadMovies(ctx context.Context, req *moviepb.LoadMoviesReques
 			return nil, status.Error(codes.DeadlineExceeded, err.Error())
 
 		default:
-			return nil, status.Error(codes.Internal, err.Error())
+			return nil, status.Error(codes.Unavailable, err.Error())
 		}
 	}
 
 	resp := &moviepb.LoadMoviesResponse{
-		Movies:  make([]*moviepb.Movie, len(result.Movies)),
-		MErrors: make([]*moviepb.MovieError, len(result.Errors)),
+		Movies:  make([]*moviepb.Movie, 0),
+		MErrors: make([]*moviepb.MovieError, 0),
 	}
 
 	for _, movie := range result.Movies {
@@ -85,7 +85,7 @@ func (h *GHandler) GetLastMovie(ctx context.Context, req *moviepb.GetLastMovieRe
 			return nil, status.Error(codes.DeadlineExceeded, err.Error())
 
 		default:
-			return nil, status.Error(codes.Internal, err.Error())
+			return nil, status.Error(codes.Unavailable, err.Error())
 		}
 	}
 
