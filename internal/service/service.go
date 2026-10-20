@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"sync"
-	"time"
 
 	"github.com/ButyugovMxx/GoPrac/internal/client"
 )
@@ -43,9 +42,6 @@ func (m *MovieService) LoadMovies(ctx context.Context, from int, to int) (Loadre
 		return Loadres{}, ErrNotValueArgs
 	}
 
-	ctxT, cencel := context.WithTimeout(ctx, 5*time.Second)
-	defer cencel()
-
 	ch := make(chan int)
 
 	movies := make([]client.Movieload, 0)
@@ -57,7 +53,7 @@ func (m *MovieService) LoadMovies(ctx context.Context, from int, to int) (Loadre
 		go func() {
 			defer wg.Done()
 			for id := range ch {
-				movie, err := m.client.GetMovie(ctxT, id)
+				movie, err := m.client.GetMovie(ctx, id)
 				mu.Lock()
 				if err != nil {
 					movieErrors = append(movieErrors, MovieError{
@@ -90,24 +86,25 @@ func (m *MovieService) LoadMovies(ctx context.Context, from int, to int) (Loadre
 
 func (m *MovieService) LoadLastMovie(ctx context.Context) (client.Movieload, error) {
 	var movie client.Movieload
-
-	ctxT, cencel := context.WithTimeout(ctx, 5*time.Second)
-	defer cencel()
-
+	found := false
 	right := 99999
 	left := 1
 	for left <= right {
 		middle := (right-left)/2 + left
-		curMovie, err := m.client.GetMovie(ctxT, middle)
+		curMovie, err := m.client.GetMovie(ctx, middle)
 		if err == nil {
+			movie = curMovie
+			found = true
 			left = middle + 1
-		} else if errors.Is(err, client.ErrBadReq) {
+		} else if errors.Is(err, client.NotFound) {
 			right = middle - 1
 		} else {
 			return client.Movieload{}, err
 		}
+	}
 
-		movie = curMovie
+	if !found {
+		return client.Movieload{}, client.NotFound
 	}
 	return movie, nil
 }
