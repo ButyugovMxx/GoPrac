@@ -40,7 +40,7 @@ func (h *GHandler) LoadMovies(ctx context.Context, req *moviepb.LoadMoviesReques
 		case errors.Is(err, service.ErrInvalidRange):
 			return nil, status.Error(codes.InvalidArgument, err.Error())
 
-		case errors.Is(err, service.ErrNotValueArgs):
+		case errors.Is(err, service.ErrInvalidRange):
 			return nil, status.Error(codes.InvalidArgument, err.Error())
 
 		case errors.Is(err, context.Canceled):

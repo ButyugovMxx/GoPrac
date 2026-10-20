@@ -33,7 +33,7 @@ func (s *HttpServer) Run(ctx context.Context) error {
 	errCh := make(chan error, 1)
 
 	go func() {
-		log.Println("HTTP server starting")
+		log.Printf("HTTP server starting on %s", s.server.Addr)
 		errCh <- s.server.ListenAndServe()
 	}()
 

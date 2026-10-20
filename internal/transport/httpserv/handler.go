@@ -49,7 +49,7 @@ func (h *Handler) LoadFilms(w http.ResponseWriter, r *http.Request) {
 		case errors.Is(err, service.ErrInvalidRange):
 			http.Error(w, "Service: invalid movie range", http.StatusBadRequest)
 			return
-		case errors.Is(err, service.ErrNotValueArgs):
+		case errors.Is(err, service.ErrInvalidRange):
 			http.Error(w, "Servise: args is not currect", http.StatusBadRequest)
 			return
 		case errors.Is(err, context.DeadlineExceeded):

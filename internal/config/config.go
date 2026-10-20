@@ -7,10 +7,10 @@ type Config struct {
 	Addr         string
 }
 
-func Load() *Config {
+func Load() Config {
 	config := Config{
 		MovieBaseUrl: os.Getenv("MOVIE_BASE_URL"),
-		Addr:         os.Getenv("ADDR"),
+		Addr:         os.Getenv("HTTP_ADDR"),
 	}
 
 	if config.MovieBaseUrl == "" {
@@ -21,5 +21,5 @@ func Load() *Config {
 		config.Addr = ":8080"
 	}
 
-	return &config
+	return config
 }

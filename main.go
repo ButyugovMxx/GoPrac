@@ -15,7 +15,7 @@ import (
 )
 
 func main() {
-	cfg := *config.Load()
+	cfg := config.Load()
 
 	c := client.NewMovieClient(cfg.MovieBaseUrl)
 	s := service.NewMovieService(c, 10)

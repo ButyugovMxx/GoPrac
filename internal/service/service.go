@@ -31,15 +31,15 @@ type Loadres struct {
 }
 
 var ErrInvalidRange = errors.New("invalid movie range")
-var ErrNotValueArgs = errors.New("uncorrect args: from > to")
 
 func (m *MovieService) LoadMovies(ctx context.Context, from int, to int) (Loadres, error) {
-	if from == -1 || to == -1 {
+
+	if to < from {
 		return Loadres{}, ErrInvalidRange
 	}
 
-	if to < from {
-		return Loadres{}, ErrNotValueArgs
+	if from < 1 {
+		return Loadres{}, ErrInvalidRange
 	}
 
 	ch := make(chan int)
