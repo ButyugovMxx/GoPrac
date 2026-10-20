@@ -12,8 +12,14 @@ import (
 	"github.com/ButyugovMxx/GoPrac/internal/service"
 	"github.com/ButyugovMxx/GoPrac/internal/transport/grpcserv"
 	"github.com/ButyugovMxx/GoPrac/internal/transport/httpserv"
+
+	_ "github.com/ButyugovMxx/GoPrac/docs"
 )
 
+// @title Movie Service API
+// @version 1.0
+// @description HTTP API for loading movies from an external service.
+// @BasePath /
 func main() {
 	cfg := config.Load()
 

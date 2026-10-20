@@ -27,6 +27,17 @@ type ToFrom struct {
 	from int
 }
 
+// LoadFilms godoc
+// @Summary Load movies by ID range
+// @Description Loads movies from the external movie service.
+// @Tags movies
+// @Produce json
+// @Param from query int true "First movie ID"
+// @Param to query int true "Last movie ID"
+// @Success 200 {array} client.Movieload
+// @Failure 400 {string} string "Invalid range"
+// @Failure 502 {string} string "Upstream error"
+// @Router /load-movies [get]
 func (h *Handler) LoadFilms(w http.ResponseWriter, r *http.Request) {
 	m := r.URL.Query()
 	from, err := strconv.Atoi(m.Get("from"))
@@ -69,6 +80,15 @@ func (h *Handler) LoadFilms(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// LoadLastFilm godoc
+// @Summary Get last available movie
+// @Description Finds the movie with the highest available ID.
+// @Tags movies
+// @Produce json
+// @Success 200 {object} client.Movieload
+// @Failure 404 {string} string "Movie not found"
+// @Failure 502 {string} string "Upstream error"
+// @Router /last-movie [get]
 func (h *Handler) LoadLastFilm(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	film, err := h.service.LoadLastMovie(ctx)

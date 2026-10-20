@@ -7,6 +7,8 @@ import (
 	"log"
 	"net/http"
 	"time"
+
+	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
 type HttpServer struct {
@@ -18,6 +20,7 @@ func NewServer(h *Handler, addr string) *HttpServer {
 
 	mux.HandleFunc("GET /load-movies", h.LoadFilms)
 	mux.HandleFunc("GET /last-movie", h.LoadLastFilm)
+	mux.Handle("GET /swagger/", httpSwagger.Handler())
 
 	s := &http.Server{
 		Addr:    addr,
