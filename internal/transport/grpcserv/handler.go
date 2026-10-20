@@ -78,7 +78,7 @@ func (h *GHandler) GetLastMovie(ctx context.Context, req *moviepb.GetLastMovieRe
 	movie, err := h.service.LoadLastMovie(ctx)
 	if err != nil {
 		switch {
-		case errors.Is(err, client.ErrBadReq):
+		case errors.Is(err, client.NotFound):
 			return nil, status.Error(codes.NotFound, err.Error())
 
 		case errors.Is(err, context.DeadlineExceeded):

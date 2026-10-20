@@ -36,11 +36,11 @@ func (g *Gserver) Run(ctx context.Context) error {
 	defer listener.Close()
 
 	ErrCh := make(chan error)
-	defer close(ErrCh)
 
 	go func() {
 		log.Println("grpc-server started")
 		ErrCh <- g.server.Serve(listener)
+		close(ErrCh)
 	}()
 
 	select {
@@ -63,7 +63,7 @@ func (g *Gserver) Run(ctx context.Context) error {
 
 	select {
 	case <-helpCh:
-		log.Println("grpc good stopped")
+		log.Println("grpc is good stopped")
 		return nil
 	case <-time.After(time.Second * 10):
 		g.server.Stop()

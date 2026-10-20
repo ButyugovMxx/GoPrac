@@ -13,14 +13,14 @@ type HttpServer struct {
 	server *http.Server
 }
 
-func NewServer(h *Handler) *HttpServer {
+func NewServer(h *Handler, addr string) *HttpServer {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("GET /load-movies", h.LoadFilms)
-	mux.HandleFunc("GET /load-last", h.LoadLastFilm)
+	mux.HandleFunc("GET /last-movie", h.LoadLastFilm)
 
 	s := &http.Server{
-		Addr:    ":8080",
+		Addr:    addr,
 		Handler: mux,
 	}
 
@@ -45,7 +45,7 @@ func (s *HttpServer) Run(ctx context.Context) error {
 		return fmt.Errorf("cannot start server: %w", err)
 
 	case <-ctx.Done():
-		log.Println("graceful shutdown server")
+		log.Println("shutdown http server")
 	}
 
 	ctxShutdown, cancel := context.WithTimeout(

@@ -74,7 +74,7 @@ func (h *Handler) LoadLastFilm(w http.ResponseWriter, r *http.Request) {
 	film, err := h.service.LoadLastMovie(ctx)
 	if err != nil {
 		switch {
-		case errors.Is(err, client.ErrBadReq):
+		case errors.Is(err, client.NotFound):
 			http.Error(w, "Movie not found", http.StatusNotFound)
 
 		case errors.Is(err, context.DeadlineExceeded):
