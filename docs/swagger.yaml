@@ -1,0 +1,79 @@
+basePath: /
+definitions:
+  client.Movieload:
+    properties:
+      director:
+        type: string
+      id:
+        type: integer
+      title:
+        type: string
+      year:
+        type: integer
+    type: object
+info:
+  contact: {}
+  description: HTTP API for loading movies from an external service.
+  title: Movie Service API
+  version: "1.0"
+paths:
+  /last-movie:
+    get:
+      description: Finds the movie with the highest available ID.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/client.Movieload'
+        "404":
+          description: Movie not found
+          schema:
+            type: string
+        "502":
+          description: Upstream error
+          schema:
+            type: string
+      summary: Get last available movie
+      tags:
+      - movies
+  /load-movies:
+    get:
+      description: Loads movies from the external movie service.
+      parameters:
+      - description: First movie ID
+        in: query
+        name: from
+        required: true
+        type: integer
+      - description: Last movie ID
+        in: query
+        name: to
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            X-Partial-Errors:
+              description: JSON array of per-movie errors, present when some movies could not be loaded
+              type: string
+          schema:
+            items:
+              $ref: '#/definitions/client.Movieload'
+            type: array
+        "400":
+          description: Invalid range
+          schema:
+            type: string
+        "502":
+          description: Upstream error
+          schema:
+            type: string
+      summary: Load movies by ID range
+      tags:
+      - movies
+swagger: "2.0"
