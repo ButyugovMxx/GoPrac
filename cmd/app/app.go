@@ -9,8 +9,8 @@ import (
 
 	movieclient "github.com/ButyugovMxx/GoPrac/internal/adapter/movieclient"
 	"github.com/ButyugovMxx/GoPrac/internal/config"
-	"github.com/ButyugovMxx/GoPrac/internal/transport/grpcserv"
-	"github.com/ButyugovMxx/GoPrac/internal/transport/httpserv"
+	"github.com/ButyugovMxx/GoPrac/internal/handler/grpcserv"
+	"github.com/ButyugovMxx/GoPrac/internal/handler/httpserv"
 	"github.com/ButyugovMxx/GoPrac/internal/usecase"
 
 	_ "github.com/ButyugovMxx/GoPrac/docs"
