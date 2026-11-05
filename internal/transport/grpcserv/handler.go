@@ -5,25 +5,25 @@ import (
 	"errors"
 
 	moviepb "github.com/ButyugovMxx/GoPrac/api/proto"
-	"github.com/ButyugovMxx/GoPrac/internal/client"
-	"github.com/ButyugovMxx/GoPrac/internal/service"
+	"github.com/ButyugovMxx/GoPrac/internal/domain"
+	"github.com/ButyugovMxx/GoPrac/internal/usecase"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 type GHandler struct {
-	service *service.MovieService
+	service usecase.MovieUseCase
 
 	moviepb.UnimplementedMovieServiceServer
 }
 
-func NewGhandler(s *service.MovieService) *GHandler {
+func NewGhandler(s usecase.MovieUseCase) *GHandler {
 	return &GHandler{
 		service: s,
 	}
 }
 
-func toProtoMovie(m client.Movieload) *moviepb.Movie {
+func toProtoMovie(m domain.Movieload) *moviepb.Movie {
 	return &moviepb.Movie{
 		Id:       m.Id,
 		Title:    m.Title,
@@ -37,10 +37,10 @@ func (h *GHandler) LoadMovies(ctx context.Context, req *moviepb.LoadMoviesReques
 	result, err := h.service.LoadMovies(ctx, int(req.GetFrom()), int(req.GetTo()))
 	if err != nil {
 		switch {
-		case errors.Is(err, service.ErrInvalidRange):
+		case errors.Is(err, domain.ErrInvalidRange):
 			return nil, status.Error(codes.InvalidArgument, err.Error())
 
-		case errors.Is(err, service.ErrInvalidRange):
+		case errors.Is(err, domain.ErrInvalidRange):
 			return nil, status.Error(codes.InvalidArgument, err.Error())
 
 		case errors.Is(err, context.Canceled):
@@ -78,7 +78,7 @@ func (h *GHandler) GetLastMovie(ctx context.Context, req *moviepb.GetLastMovieRe
 	movie, err := h.service.LoadLastMovie(ctx)
 	if err != nil {
 		switch {
-		case errors.Is(err, client.NotFound):
+		case errors.Is(err, domain.NotFound):
 			return nil, status.Error(codes.NotFound, err.Error())
 
 		case errors.Is(err, context.DeadlineExceeded):

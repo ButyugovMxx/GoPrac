@@ -1,51 +1,39 @@
-package service
+package usecase
 
 import (
 	"context"
 	"errors"
 	"sync"
 
-	"github.com/ButyugovMxx/GoPrac/internal/client"
+	"github.com/ButyugovMxx/GoPrac/internal/domain"
 )
 
 type MovieService struct {
-	client  client.MovieClient
+	client  MovieProvider
 	workers int
 }
 
-func NewMovieService(client client.MovieClient, workers int) *MovieService {
+func NewMovieService(client MovieProvider, workers int) *MovieService {
 	return &MovieService{
 		client:  client,
 		workers: workers,
 	}
 }
 
-type MovieError struct {
-	Id  int
-	Err error
-}
-
-type Loadres struct {
-	Movies []client.Movieload
-	Errors []MovieError
-}
-
-var ErrInvalidRange = errors.New("invalid movie range")
-
-func (m *MovieService) LoadMovies(ctx context.Context, from int, to int) (Loadres, error) {
+func (m *MovieService) LoadMovies(ctx context.Context, from int, to int) (domain.Loadres, error) {
 
 	if to < from {
-		return Loadres{}, ErrInvalidRange
+		return domain.Loadres{}, domain.ErrInvalidRange
 	}
 
 	if from < 1 {
-		return Loadres{}, ErrInvalidRange
+		return domain.Loadres{}, domain.ErrInvalidRange
 	}
 
 	ch := make(chan int)
 
-	movies := make([]client.Movieload, 0)
-	movieErrors := make([]MovieError, 0)
+	movies := make([]domain.Movieload, 0)
+	movieErrors := make([]domain.MovieError, 0)
 	var wg sync.WaitGroup
 	var mu sync.Mutex
 	for i := 0; i < m.workers; i++ {
@@ -56,7 +44,7 @@ func (m *MovieService) LoadMovies(ctx context.Context, from int, to int) (Loadre
 				movie, err := m.client.GetMovie(ctx, id)
 				mu.Lock()
 				if err != nil {
-					movieErrors = append(movieErrors, MovieError{
+					movieErrors = append(movieErrors, domain.MovieError{
 						Id:  id,
 						Err: err,
 					})
@@ -77,15 +65,15 @@ func (m *MovieService) LoadMovies(ctx context.Context, from int, to int) (Loadre
 
 	wg.Wait()
 
-	res := Loadres{
+	res := domain.Loadres{
 		Movies: movies,
 		Errors: movieErrors,
 	}
 	return res, nil
 }
 
-func (m *MovieService) LoadLastMovie(ctx context.Context) (client.Movieload, error) {
-	var movie client.Movieload
+func (m *MovieService) LoadLastMovie(ctx context.Context) (domain.Movieload, error) {
+	var movie domain.Movieload
 	found := false
 	right := 99999
 	left := 1
@@ -96,15 +84,15 @@ func (m *MovieService) LoadLastMovie(ctx context.Context) (client.Movieload, err
 			movie = curMovie
 			found = true
 			left = middle + 1
-		} else if errors.Is(err, client.NotFound) {
+		} else if errors.Is(err, domain.NotFound) {
 			right = middle - 1
 		} else {
-			return client.Movieload{}, err
+			return domain.Movieload{}, err
 		}
 	}
 
 	if !found {
-		return client.Movieload{}, client.NotFound
+		return domain.Movieload{}, domain.NotFound
 	}
 	return movie, nil
 }

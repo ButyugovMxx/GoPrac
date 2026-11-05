@@ -8,12 +8,12 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/ButyugovMxx/GoPrac/internal/client"
-	"github.com/ButyugovMxx/GoPrac/internal/service"
+	"github.com/ButyugovMxx/GoPrac/internal/domain"
+	"github.com/ButyugovMxx/GoPrac/internal/usecase"
 )
 
 type Handler struct {
-	service *service.MovieService
+	service usecase.MovieUseCase
 }
 
 type partialMovieError struct {
@@ -21,7 +21,7 @@ type partialMovieError struct {
 	Error string `json:"error"`
 }
 
-func NewHandler(s *service.MovieService) *Handler {
+func NewHandler(s usecase.MovieUseCase) *Handler {
 	return &Handler{
 		service: s,
 	}
@@ -39,7 +39,7 @@ type ToFrom struct {
 // @Produce json
 // @Param from query int true "First movie ID"
 // @Param to query int true "Last movie ID"
-// @Success 200 {array} client.Movieload
+// @Success 200 {array} domain.Movieload
 // @Header 200 {string} X-Partial-Errors "JSON array of per-movie errors, present when some movies could not be loaded"
 // @Failure 400 {string} string "Invalid range"
 // @Failure 502 {string} string "Upstream error"
@@ -63,7 +63,7 @@ func (h *Handler) LoadFilms(w http.ResponseWriter, r *http.Request) {
 	movies, err := h.service.LoadMovies(ctx, from, to)
 	if err != nil {
 		switch {
-		case errors.Is(err, service.ErrInvalidRange):
+		case errors.Is(err, domain.ErrInvalidRange):
 			http.Error(w, "Service: invalid movie range", http.StatusBadRequest)
 			return
 		case errors.Is(err, context.DeadlineExceeded):
@@ -105,7 +105,7 @@ func (h *Handler) LoadFilms(w http.ResponseWriter, r *http.Request) {
 // @Description Finds the movie with the highest available ID.
 // @Tags movies
 // @Produce json
-// @Success 200 {object} client.Movieload
+// @Success 200 {object} domain.Movieload
 // @Failure 404 {string} string "Movie not found"
 // @Failure 502 {string} string "Upstream error"
 // @Router /last-movie [get]
@@ -114,7 +114,7 @@ func (h *Handler) LoadLastFilm(w http.ResponseWriter, r *http.Request) {
 	film, err := h.service.LoadLastMovie(ctx)
 	if err != nil {
 		switch {
-		case errors.Is(err, client.NotFound):
+		case errors.Is(err, domain.NotFound):
 			http.Error(w, "Movie not found", http.StatusNotFound)
 
 		case errors.Is(err, context.DeadlineExceeded):

@@ -1,6 +1,6 @@
 basePath: /
 definitions:
-  client.Movieload:
+  domain.Movieload:
     properties:
       director:
         type: string
@@ -26,7 +26,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/client.Movieload'
+            $ref: '#/definitions/domain.Movieload'
         "404":
           description: Movie not found
           schema:
@@ -59,11 +59,12 @@ paths:
           description: OK
           headers:
             X-Partial-Errors:
-              description: JSON array of per-movie errors, present when some movies could not be loaded
+              description: JSON array of per-movie errors, present when some movies
+                could not be loaded
               type: string
           schema:
             items:
-              $ref: '#/definitions/client.Movieload'
+              $ref: '#/definitions/domain.Movieload'
             type: array
         "400":
           description: Invalid range
