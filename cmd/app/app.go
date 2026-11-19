@@ -3,11 +3,13 @@ package app
 import (
 	"context"
 	"fmt"
+	"log"
 	"os/signal"
 	"sync"
 	"syscall"
 
-	movieclient "github.com/ButyugovMxx/GoPrac/internal/adapter/movieclient"
+	//"github.com/ButyugovMxx/GoPrac/internal/adapter/movieclient"
+	"github.com/ButyugovMxx/GoPrac/internal/adapter/repository"
 	"github.com/ButyugovMxx/GoPrac/internal/config"
 	"github.com/ButyugovMxx/GoPrac/internal/handler/grpcserv"
 	"github.com/ButyugovMxx/GoPrac/internal/handler/httpserv"
@@ -17,10 +19,21 @@ import (
 )
 
 func Start() {
+	ctx := context.Background()
 	cfg := config.Load()
 
-	c := movieclient.NewMovieClient(cfg.MovieBaseUrl)
-	s := usecase.NewMovieService(&c, 10)
+	db, err := repository.NewMovieDB(cfg.DbUrl)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = repository.Migrate(db, ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	//c := movieclient.NewMovieClient(cfg.MovieBaseUrl)
+	s := usecase.NewMovieService(db, 10)
 	h := httpserv.NewHandler(s)
 
 	gh := grpcserv.NewGhandler(s)
